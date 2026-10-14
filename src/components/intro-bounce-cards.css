@@ -1,0 +1,30 @@
+.intro-bounce-cards {
+  position: relative;
+  width: 100%;
+  max-width: 696px;
+  height: var(--cards-height, 220px);
+  align-self: center;
+}
+
+.intro-bounce-cards__scale {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 696px;
+  height: 220px;
+  transform: translate(-50%, -50%) scale(var(--cards-scale, 1));
+}
+
+.intro-bounce-cards__gallery .bounce-cards__card {
+  aspect-ratio: 16 / 9;
+}
+
+@media (min-width: 1024px) {
+  .intro-bounce-cards {
+    position: absolute;
+    left: 25%;
+    top: var(--cards-center, 464px);
+    width: 696px;
+    transform: translateY(-50%);
+  }
+}
