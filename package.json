@@ -1,0 +1,32 @@
+{
+  "name": "cover-letter",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:conveyor": "node scripts/build-conveyor-card.mjs",
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "@thesvg/react": "^3.3.13",
+    "cn": "^0.4.0",
+    "geist": "^1.7.2",
+    "gsap": "^3.15.0",
+    "next": "^16.4.0",
+    "page-mascot": "^0.1.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.29",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 100" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="paper" x1="140" y1="0" x2="147" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFEF7"/>
+      <stop offset=".55" stop-color="#F8F3E5"/>
+      <stop offset="1" stop-color="#EEE6D4"/>
+    </linearGradient>
+    <path id="edge" d="M4 6 13 8 19 4 31 6 39 3 48 6 56 5 64 8 72 4 84 6 91 2 102 5 113 4 121 7 130 4 143 5 150 3 159 7 169 4 180 6 189 3 199 6 209 5 218 8 226 4 239 5 247 3 257 6 267 4 276 7 274 16 278 24 275 33 277 43 274 51 278 60 275 70 277 79 273 86 276 94 265 92 257 97 246 94 237 96 228 93 216 97 206 94 196 96 186 93 176 97 166 94 155 96 144 93 135 97 124 94 113 96 103 93 93 97 82 94 71 96 63 93 53 97 43 94 32 96 24 92 14 95 4 92 6 83 2 75 5 66 3 57 6 47 2 38 5 29 3 20 6 13Z"/>
+    <clipPath id="sheet"><use href="#edge"/></clipPath>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="3" seed="11" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+  <use href="#edge" fill="url(#paper)"/>
+  <g clip-path="url(#sheet)">
+    <path d="M0 10 45 8 88 9 130 7 180 9 228 8 280 10" stroke="#FFF" stroke-opacity=".65" stroke-width="2"/>
+    <path d="M0 92 54 94 103 92 151 94 202 92 248 94 280 91" stroke="#C8BDA5" stroke-opacity=".3" stroke-width="1"/>
+    <path d="M19 40C84 36 160 43 263 39" stroke="#FFF" stroke-opacity=".2"/>
+    <rect width="280" height="100" filter="url(#grain)" opacity=".075"/>
+  </g>
+</svg>
