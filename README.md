@@ -4,6 +4,8 @@ Next.js App Router, Tailwind CSS, and TypeScript implementation of the **Homepag
 
 ## Run
 
+For the Vercel multi-service configuration and routing awaiting confirmation, see [VERCEL.md](./VERCEL.md).
+
 ```sh
 npm install
 npm run dev
