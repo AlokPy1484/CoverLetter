@@ -16,6 +16,7 @@ import { SmoothGradientText } from "./smooth-gradient-text";
 import { IntuitiveFuzzyText } from "./intuitive-fuzzy-text";
 import { AwesomeGlitchText } from "./awesome-glitch-text";
 import { ConveyorCard } from "./conveyor-card";
+import { animateInlineLayout } from "./inline-layout-motion";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText);
 
@@ -136,17 +137,19 @@ export function ScrollRevealSequence({ children, className }: {
         );
         const paragraphLabels = paragraphs.map(element => element.getAttribute("aria-label") || "");
         const splits = paragraphs.map(element => SplitText.create(element, {
-          type: "chars",
+          type: desktop ? "chars" : "words,chars",
           tag: "span",
           smartWrap: false,
           reduceWhiteSpace: false,
           aria: "auto",
           charsClass: "scroll-reveal-char",
+          wordsClass: "scroll-reveal-word",
           ignore: "[data-crown], [data-crown-baseline], [data-extra-ws], [data-inline-player], [data-conveyor-card], [data-opportunity-slot], [data-glass-overlay], [data-glass-baseline], [data-tech-baseline], [data-fuzzy-baseline]",
         }));
         // Decorative SVG lettering duplicates the phrase visually, but the
         // accessible paragraph should announce its original text only once.
         paragraphs.forEach((element, index) => element.setAttribute("aria-label", paragraphLabels[index]));
+        const stopLayoutMotion = desktop ? undefined : animateInlineLayout(paragraphs);
 
         // Inline spans keep the original wrapping, including nonbreaking spaces.
         gsap.set(splits.flatMap(split => split.chars), {
@@ -154,7 +157,7 @@ export function ScrollRevealSequence({ children, className }: {
           opacity: 0.2,
         });
         gsap.set(container.querySelectorAll("[data-extra-ws]"), { width: 0, opacity: 0 });
-        gsap.set(container.querySelectorAll("[data-inline-player]"), { width: 0, marginLeft: 0, opacity: 0, scale: 0.95 });
+        gsap.set(container.querySelectorAll("[data-inline-player]"), { width: 0, marginLeft: 0, opacity: 0, scale: desktop ? 0.95 : 0 });
         const staggeredIcons = container.querySelectorAll<HTMLElement>("[data-avatar], [data-social-icon]");
         gsap.set(staggeredIcons, { opacity: 0, x: -24 });
         gsap.set(container.querySelectorAll("[data-social-icon]"), { rotation: -25 });
@@ -250,12 +253,22 @@ export function ScrollRevealSequence({ children, className }: {
             const opportunityCharIndex = lastOpportunityChar ? characters.indexOf(lastOpportunityChar) : -1;
             if (opportunityIcon && opportunitySlot && opportunityCharIndex >= 0) {
               // Clear the text before the icon entrance can expand into it.
-              const arrival = gsap.timeline({ paused: true }).to(opportunitySlot, {
+              const arrival = gsap.timeline({ paused: true });
+              const slotSize = {
                 width: () => Number.parseFloat(getComputedStyle(opportunitySlot).height),
-                marginLeft: 8, duration: 0.12, ease: "power2.out", autoRound: false,
-              }, 0).to(opportunityIcon, {
-                scale: 1, autoAlpha: 1, duration: 0.7, ease: "back.out(1.2)",
-              }, 0.12);
+                marginLeft: 8,
+              };
+              if (desktop) {
+                arrival.to(opportunitySlot, { ...slotSize, duration: 0.12, ease: "power2.out", autoRound: false }, 0);
+              } else {
+                // Reserve the final width immediately: one fast FLIP movement,
+                // then reveal the icon after the words have reached their slots.
+                arrival.set(opportunitySlot, { ...slotSize, immediateRender: false }, 0.001);
+              }
+              arrival.to(opportunityIcon, {
+                scale: 1, autoAlpha: 1, duration: desktop ? 0.7 : 0.3,
+                ease: desktop ? "back.out(1.2)" : "power1.inOut",
+              }, desktop ? 0.12 : 0.2);
               triggeredAnimations.push({ animation: arrival, startsAt: startsAt + opportunityCharIndex * 0.08 + 1 });
             }
             if (conveyorCard && conveyorCharIndex >= 0) {
@@ -333,10 +346,18 @@ export function ScrollRevealSequence({ children, className }: {
           // Append after the entire preceding tween, including its stagger.
           if (inlinePlayer && inlineWordEnd > 0) {
             reveal(split.chars.slice(0, inlineWordEnd));
-            const arrival = gsap.timeline({ paused: true }).to(inlinePlayer, {
+            const arrival = gsap.timeline({ paused: true });
+            const playerSize = {
               width: () => Number.parseFloat(getComputedStyle(inlinePlayer).getPropertyValue("--inline-player-width")),
-              marginLeft: 10, opacity: 1, scale: 1, duration: 0.5, ease: "power2.inOut", autoRound: false, onUpdate: alignCrowns,
-            });
+              marginLeft: 10,
+            };
+            if (desktop) {
+              arrival.to(inlinePlayer, { ...playerSize, opacity: 1, scale: 1, duration: 0.5, ease: "power2.inOut", autoRound: false, onUpdate: alignCrowns });
+            } else {
+              arrival.set(inlinePlayer, { ...playerSize, immediateRender: false }, 0.001);
+              arrival.call(alignCrowns, [], 0.001);
+              arrival.to(inlinePlayer, { opacity: 1, scale: 1, duration: 0.3, ease: "power1.inOut" }, 0.2);
+            }
             triggeredAnimations.push({ animation: arrival, startsAt: timeline.duration() });
             timeline.to({}, { duration: arrival.duration() });
             reveal(split.chars.slice(inlineWordEnd));
@@ -439,6 +460,7 @@ export function ScrollRevealSequence({ children, className }: {
             },
           });
         });
+        return () => stopLayoutMotion?.();
       });
       alignCrowns();
       window.addEventListener("resize", alignCrowns);
@@ -505,7 +527,7 @@ export function ScrollRevealText({ as: Tag = "p", text, className, avatars = fal
     const iconSrc = callIcon ? "/calendar-call.webp" : "/opportunity-travel.png";
     const opportunityIndex = opportunityIcon || callIcon ? value.indexOf(iconWord) : -1;
     if (opportunityIndex < 0) return withAnimatedWords(value, { techWord, gradientWord, fuzzyWord, glitchWord });
-    return <>{value.slice(0, opportunityIndex)}<span className="inline-block whitespace-nowrap"><span data-opportunity-word>{iconWord}</span><span data-opportunity-slot aria-hidden="true" className={`relative ml-[8px] inline-block ${callIcon ? "h-[1.7em] w-[1.7em] align-[-0.4em]" : "h-[1.15em] w-[1.15em] align-[-0.2em]"}`}><img data-opportunity-icon src={iconSrc} alt="" width={100} height={100} className="absolute left-0 top-0 h-full w-full max-w-none object-contain" /></span></span>{value.slice(opportunityIndex + iconWord.length)}</>;
+    return <>{value.slice(0, opportunityIndex)}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-opportunity-word>{iconWord}</span><span data-opportunity-slot aria-hidden="true" className={`relative ml-[8px] inline-block ${callIcon ? "h-[1.7em] w-[1.7em] align-[-0.4em]" : "h-[1.15em] w-[1.15em] align-[-0.2em]"}`}><img data-opportunity-icon src={iconSrc} alt="" width={100} height={100} className="absolute left-0 top-0 h-full w-full max-w-none object-contain" /></span></span>{value.slice(opportunityIndex + iconWord.length)}</>;
   };
   if (mascotAfter && mascotIndex >= 0) {
     const suffix = text.slice(mascotIndex + mascotAfter.length);
@@ -518,7 +540,7 @@ export function ScrollRevealText({ as: Tag = "p", text, className, avatars = fal
   return (
     <Tag className={`relative ${className || ""}`}>
       <span data-scroll-reveal aria-label={text.replace("awwwsome", "awwwwwsome")}>
-        {conveyorEnd >= 0 ? <>{text.slice(0, conveyorWordStart)}<span className="inline-block whitespace-nowrap"><span data-conveyor-word>{text.slice(conveyorWordStart, conveyorEnd)}</span><ConveyorCard /></span>{text.slice(conveyorEnd)}</> : inlineVideoAfter && inlineVideoIndex >= 0 ? <>{renderPlainText(text.slice(0, inlineVideoIndex))}<span className="inline-block whitespace-nowrap"><span data-inline-video-word>{inlineVideoAfter}</span><InlineVideo content={inlineVideoContent} /></span>{renderPlainText(text.slice(inlineVideoIndex + inlineVideoAfter.length))}</> : crownWord && wordIndex >= 0 ? <>{text.slice(0, wordIndex)}<span data-crown-word={crownWord} className="relative inline-block whitespace-nowrap">{crownWord}<span data-crown-baseline aria-hidden="true" className="inline-block h-0 w-0 align-baseline" /><Crown /></span>{renderPlainText(text.slice(wordIndex + crownWord.length))}</> : glassWord ? withGlassWord(text, glassWord) : renderPlainText(text)}
+        {conveyorEnd >= 0 ? <>{text.slice(0, conveyorWordStart)}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-conveyor-word>{text.slice(conveyorWordStart, conveyorEnd)}</span><ConveyorCard /></span>{text.slice(conveyorEnd)}</> : inlineVideoAfter && inlineVideoIndex >= 0 ? <>{renderPlainText(text.slice(0, inlineVideoIndex))}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-inline-video-word>{inlineVideoAfter}</span><InlineVideo content={inlineVideoContent} /></span>{renderPlainText(text.slice(inlineVideoIndex + inlineVideoAfter.length))}</> : crownWord && wordIndex >= 0 ? <>{text.slice(0, wordIndex)}<span data-crown-word={crownWord} className="relative inline-block whitespace-nowrap">{crownWord}<span data-crown-baseline aria-hidden="true" className="inline-block h-0 w-0 align-baseline" /><Crown /></span>{renderPlainText(text.slice(wordIndex + crownWord.length))}</> : glassWord ? withGlassWord(text, glassWord) : renderPlainText(text)}
       </span>
       {techWord && text.includes(techWord) && <FunctionalTechText text={techWord} />}
       {gradientWord && text.includes(gradientWord) && <SmoothGradientText text={gradientWord} />}
