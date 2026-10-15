@@ -20,6 +20,8 @@ export function ConveyorCard() {
     const reset = (event: Event) => { if (belongsHere(event)) send("reset"); };
     const ready = (event: MessageEvent) => {
       if (event.origin === window.location.origin && event.source === frame()?.contentWindow && event.data?.type === "conveyor-ready") {
+        const liveFrame = frame();
+        if (liveFrame) liveFrame.dataset.assetReady = "true";
         send(requestedAction.current);
       }
     };
@@ -47,7 +49,7 @@ export function ConveyorCard() {
       <iframe
         src="/hairline/conveyor-card.html"
         title="Interactive conveyor turning an idea into a finished box"
-        loading="lazy"
+        loading="eager"
         className="absolute inset-0 h-full w-full border-0"
       />
     </span>

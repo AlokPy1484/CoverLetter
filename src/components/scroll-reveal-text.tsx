@@ -447,19 +447,31 @@ export function ScrollRevealSequence({ children, className }: {
 
     // Split after font loading. Characters stay inline, so responsive reflow
     // needs no re-splitting; ScrollTrigger refreshes its range on resize.
+    const refreshSiteLayout = () => {
+      alignCrowns();
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener("site:refresh-layout", refreshSiteLayout);
     void document.fonts.ready.then(() => {
-      if (!cancelled) initialize();
+      if (!cancelled) {
+        initialize();
+        refreshSiteLayout();
+        container.dataset.layoutReady = "true";
+        window.dispatchEvent(new Event("site:layout-ready"));
+      }
     });
 
     return () => {
       cancelled = true;
+      delete container.dataset.layoutReady;
+      window.removeEventListener("site:refresh-layout", refreshSiteLayout);
       window.removeEventListener("resize", alignCrowns);
       document.fonts.removeEventListener("loadingdone", refreshFontLayout);
       media.revert();
     };
   }, { scope: containerRef });
 
-  return <main ref={containerRef} className={className}>{children}</main>;
+  return <main ref={containerRef} data-scroll-layout className={className}>{children}</main>;
 }
 
 export function ScrollRevealText({ as: Tag = "p", text, className, avatars = false, crownWord, projectVideo = false, socialIcons = false, inlineVideoAfter, inlineVideoContent, mascotAfter, glassWord, techWord, gradientWord, fuzzyWord, glitchWord, conveyorAfter, opportunityIcon = false, callIcon = false }: {

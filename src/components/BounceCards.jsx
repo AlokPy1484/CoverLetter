@@ -19,10 +19,10 @@ const parseTransform = value => {
   };
 };
 
-const toCard = item => (typeof item === 'string' ? { src: item, alt: '' } : { src: item?.src, alt: item?.alt ?? '' });
+const toCard = item => (typeof item === 'string' ? { src: item, alt: '', video: undefined } : { src: item?.src, alt: item?.alt ?? '', video: item?.video });
 
 export default function BounceCards({
-  images = /** @type {Array<string | { src: string, alt?: string }>} */ ([]),
+  images = /** @type {Array<string | { src: string, alt?: string, video?: string }>} */ ([]),
   className = '',
   style,
   containerWidth = 400,
@@ -84,6 +84,23 @@ export default function BounceCards({
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const bodies = [];
     const state = { hovered: -1, time: 0, layer: -1 };
+    // Playback can begin before the spring animation's next frame. Check the
+    // selection directly rather than the data-active attribute set by that frame.
+    const mediaCleanup = cardRefs.current.map((el, i) => {
+      const video = el?.querySelector('video');
+      if (!video) return () => {};
+      const onPlaying = () => {
+        if (state.hovered === i) el.setAttribute('data-playing', '');
+        else video.pause();
+      };
+      const onPause = () => el.removeAttribute('data-playing');
+      video.addEventListener('playing', onPlaying);
+      video.addEventListener('pause', onPause);
+      return () => {
+        video.removeEventListener('playing', onPlaying);
+        video.removeEventListener('pause', onPause);
+      };
+    });
     let raf = 0;
     let last = performance.now();
     let alive = true;
@@ -114,6 +131,8 @@ export default function BounceCards({
     const frame = now => {
       raf = 0;
       if (!alive) return;
+      const loadingGate = root.closest('[data-site-content]');
+      if (loadingGate && loadingGate.dataset.siteState !== 'ready') return;
       const s = settingsRef.current;
       const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000));
       last = now;
@@ -217,19 +236,32 @@ export default function BounceCards({
       return best;
     };
 
+    // Use the same selected card for playback and the spring animation, so
+    // overlapping cards do not switch videos as they move beneath the pointer.
+    const select = next => {
+      if (next === state.hovered) return;
+      state.hovered = next;
+      cardRefs.current.forEach((el, i) => {
+        const video = el?.querySelector('video');
+        if (!video) return;
+        if (i === next) {
+          void video.play().catch(() => {});
+        } else {
+          video.pause();
+          el.removeAttribute('data-playing');
+          if (video.readyState > 0) video.currentTime = 0;
+        }
+      });
+      wake();
+    };
     const onMove = event => {
       const next = pick(event);
-      if (next !== state.hovered) {
-        state.hovered = next;
-        wake();
-      }
+      select(next);
     };
     const onLeave = () => {
-      if (state.hovered !== -1) {
-        state.hovered = -1;
-        wake();
-      }
+      select(-1);
     };
+    const onVisibility = () => { if (document.hidden) onLeave(); };
     const onClick = event => {
       const index = pick(event);
       if (index < 0) return;
@@ -241,8 +273,7 @@ export default function BounceCards({
     const onFocus = event => {
       const index = cardRefs.current.indexOf(event.target);
       if (index >= 0) {
-        state.hovered = index;
-        wake();
+        select(index);
       }
     };
     const onKey = event => {
@@ -262,12 +293,17 @@ export default function BounceCards({
     root.addEventListener('focusin', onFocus);
     root.addEventListener('focusout', onLeave);
     root.addEventListener('keydown', onKey);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onLeave);
+    window.addEventListener('site:revealed', wake);
     wake();
 
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
       wakeRef.current = null;
+      mediaCleanup.forEach(cleanup => cleanup());
+      cardRefs.current.forEach(el => el?.querySelector('video')?.pause());
       root.removeEventListener('pointermove', onMove);
       root.removeEventListener('pointerdown', onMove);
       root.removeEventListener('pointerleave', onLeave);
@@ -275,6 +311,9 @@ export default function BounceCards({
       root.removeEventListener('focusin', onFocus);
       root.removeEventListener('focusout', onLeave);
       root.removeEventListener('keydown', onKey);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', onLeave);
+      window.removeEventListener('site:revealed', wake);
     };
   }, []);
 
@@ -308,11 +347,23 @@ export default function BounceCards({
           ref={el => {
             cardRefs.current[i] = el;
           }}
-          className={`bounce-cards__card${settings.clickable ? ' bounce-cards__card--clickable' : ''}`}
+          className={`bounce-cards__card${card.video ? ' bounce-cards__card--video' : ''}${settings.clickable ? ' bounce-cards__card--clickable' : ''}`}
           style={{ zIndex: i + 1 }}
+          {...(card.video ? { tabIndex: 0, role: 'group', 'aria-label': card.alt } : null)}
           {...(settings.clickable ? { role: 'button', tabIndex: 0, 'aria-label': card.alt || `Card ${i + 1}` } : null)}
         >
-          {card.src && <img src={card.src} alt={card.alt} draggable={false} />}
+          {card.video && (
+            <video
+              src={card.video}
+              poster={card.src || undefined}
+              muted
+              loop
+              playsInline
+              preload={card.src ? "none" : "auto"}
+              aria-label={card.alt}
+            />
+          )}
+          {card.src && <img src={card.src} alt={card.video ? '' : card.alt} draggable={false} />}
         </div>
       ))}
     </div>

@@ -1,0 +1,48 @@
+/* Keep hover motion inside the frame animated by the scroll timeline. */
+[data-project-surface] {
+  scale: 1;
+  transition: scale 300ms ease-in-out;
+}
+
+[data-project-surface]:is(:hover, :focus-within) {
+  scale: 1.5;
+}
+
+[data-project-side] {
+  --preview-x: -24px;
+  --preview-rotation: 1deg;
+  z-index: 0;
+  transition: z-index 0s linear 150ms;
+}
+
+[data-project-side="right"] {
+  --preview-x: 24px;
+  --preview-rotation: -1deg;
+}
+
+.project-side-preview {
+  transform: translate(0, 0) rotate(0deg) scale(1);
+  box-shadow: 0 0 0 rgb(0 0 0 / 0);
+  transition: transform 300ms ease-in-out, box-shadow 300ms ease-in-out;
+}
+
+[data-project-side]:is(:hover, :focus-within) {
+  z-index: 20;
+}
+
+[data-project-side]:is(:hover, :focus-within) .project-side-preview {
+  transform: translate(var(--preview-x), -8px) rotate(var(--preview-rotation)) scale(1.03);
+  box-shadow: 0 16px 32px -10px rgb(0 0 0 / 28%);
+}
+
+@media (min-width: 1024px) {
+  [data-project-side="left"] { --preview-rotation: 4.5deg; }
+  [data-project-side="right"] { --preview-rotation: -4.5deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-project-side], .project-side-preview, [data-project-surface] { transition: none; }
+  [data-project-side]:is(:hover, :focus-within) .project-side-preview {
+    transform: none;
+  }
+}

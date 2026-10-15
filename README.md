@@ -27,6 +27,20 @@ The original source contains no portfolio URL or booking URL. Those lines remain
 
 Source: https://app.paper.design/file/01M4KVVC7ZT2FTGSTEKCJKAM94/p-1-0
 
+## Initial loading state
+
+The small centered loader waits for fonts, decoded images (including CSS mascot
+sprites), video posters, videos' `canplay` readiness, the conveyor's ready signal,
+and scroll layout initialization. Video files need enough buffered data to start;
+the gate does not require downloading every video in full. Content remains mounted
+for measurement but hidden and inert until reveal. Hero entrance motion starts
+after the 300ms loader fade. Reduced-motion users receive an immediate reveal.
+
+Failed image/video requests settle to the existing card/poster fallbacks. After
+10 seconds, visitors can choose “Continue to website” if a connection stalls.
+Without JavaScript, the loader is hidden and the page text remains available.
+Run `npm run test:loading` for resource-readiness regression tests (Node 22+).
+
 ## Scroll animation
 
 `src/components/scroll-reveal-text.tsx` uses GSAP SplitText and ScrollTrigger through `@gsap/react`. Each paragraph's characters start at 20% opacity and brighten in reading order as scrolling progresses. Scrolling back reverses the reveal. All paragraphs share one scrubbed timeline spanning the available document scroll distance. Each paragraph starts only after every character of the previous paragraph reaches full opacity. After paragraph one finishes, the three avatars animate from `x: -24` and zero opacity to their final positions with a left-to-right stagger; paragraph two waits for that entrance to finish. Longer paragraphs receive more scroll distance based on their stagger duration.

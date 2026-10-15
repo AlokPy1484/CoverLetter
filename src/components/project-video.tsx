@@ -1,14 +1,24 @@
-// Supply videoSrc and optionally poster when the project film is available.
+import { HoverVideo } from "./hover-video";
+import "./project-video.css";
+
 // This single player stays mounted while its frame moves between the two slots.
-export function ProjectVideo({ videoSrc, poster }: { videoSrc?: string; poster?: string }) {
+export function ProjectVideo() {
   return (
     <div data-project-stage className="relative -mt-6 aspect-[2/1] w-full max-w-[669px] self-center lg:absolute lg:left-[calc(25%-10px)] lg:top-[1491px] lg:mt-0 lg:aspect-[669/254] lg:w-[669px]">
-      <div data-project-side="left" aria-hidden="true" className="absolute left-[8%] top-[8%] aspect-video w-[64%] -rotate-3 rounded-xl bg-[#FDD4D4] lg:left-0 lg:top-[4%] lg:w-[54.41%] lg:-rotate-[6.5deg]" />
-      <div data-project-side="right" aria-hidden="true" className="absolute right-[8%] top-[8%] aspect-video w-[64%] rotate-3 rounded-xl bg-[#F7C3C3] lg:right-0 lg:top-[4%] lg:w-[54.41%] lg:rotate-[6.5deg]" />
-      <div data-project-target className="absolute left-[18%] top-[8%] aspect-video w-[64%] lg:left-[23.32%] lg:top-[3.55%] lg:w-[54.41%]">
-        <div data-project-frame className="absolute left-0 top-0 h-full w-full origin-top-left">
+      <div data-project-side="left" className="absolute left-[8%] top-[8%] aspect-video w-[64%] -rotate-3 rounded-xl lg:left-0 lg:top-[4%] lg:w-[54.41%] lg:-rotate-[6.5deg]">
+        <div className="project-side-preview h-full w-full rounded-xl bg-[#FDD4D4]">
+          <HoverVideo src="/videos/projects/Project01.mp4" poster="/videos/projects/Project01.jpg" label="Project 01" />
+        </div>
+      </div>
+      <div data-project-side="right" className="absolute right-[8%] top-[8%] aspect-video w-[64%] rotate-3 rounded-xl lg:right-0 lg:top-[4%] lg:w-[54.41%] lg:rotate-[6.5deg]">
+        <div className="project-side-preview h-full w-full rounded-xl bg-[#F7C3C3]">
+          <HoverVideo src="/videos/projects/Projects03.mp4" poster="/videos/projects/Projects03.jpg" label="Project 03" />
+        </div>
+      </div>
+      <div data-project-target className="pointer-events-none absolute left-[18%] top-[8%] z-10 aspect-video w-[64%] lg:left-[23.32%] lg:top-[3.55%] lg:w-[54.41%]">
+        <div data-project-frame className="pointer-events-auto absolute left-0 top-0 h-full w-full origin-top-left">
           <div data-project-surface className="relative h-full w-full overflow-hidden rounded-xl bg-[#FFEBEB]">
-            <VideoContent videoSrc={videoSrc} poster={poster} />
+            <HoverVideo src="/videos/projects/Projects02.mp4" poster="/videos/projects/Projects02.jpg" label="Project 02" />
           </div>
         </div>
       </div>

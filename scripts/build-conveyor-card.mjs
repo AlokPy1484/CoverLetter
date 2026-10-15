@@ -39,6 +39,7 @@ window.hairline = function (figure) {
     else if (event.data.action === "reset") handle.reset();
   };
   addEventListener("message", control);
+  document.documentElement.dataset.conveyorReady = "true";
   parent.postMessage({type: "conveyor-ready"}, location.origin);
   addEventListener("pagehide", () => {
     removeEventListener("message", control);

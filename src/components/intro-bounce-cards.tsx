@@ -4,11 +4,13 @@ import { useLayoutEffect, useRef } from "react";
 import BounceCards from "./BounceCards";
 import "./intro-bounce-cards.css";
 
+// Card positions differ from the source video filenames. Keep each poster
+// explicitly paired with its card so thumbnail changes do not change the order.
 const images = [
-  { src: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=960&h=540&q=85", alt: "Forested valley beneath granite cliffs" },
-  { src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=960&h=540&q=85", alt: "Road winding through red rock hills" },
-  { src: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=960&h=540&q=85", alt: "Mountain peaks against the sky" },
-  { src: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=960&h=540&q=85", alt: "Green hills covered in morning mist" },
+  { src: "/videos/hero/hero-first-card-thumbnail.png", video: "/videos/hero/Hero02.mp4", alt: "Hero card 1 — hover or focus to play" },
+  { src: "/videos/hero/Hero03.jpg", video: "/videos/hero/Hero03.mp4", alt: "Hero card 2 — hover or focus to play" },
+  { src: "/videos/hero/Hero04.jpg", video: "/videos/hero/Hero04.mp4", alt: "Hero card 3 — hover or focus to play" },
+  { src: "", video: "/videos/hero/Hero01.mp4", alt: "Hero card 4 — hover or focus to play" },
 ];
 
 export function IntroBounceCards() {
@@ -38,7 +40,7 @@ export function IntroBounceCards() {
   }, []);
 
   return (
-    <div ref={frameRef} data-intro-cards className="intro-bounce-cards" role="group" aria-label="Landscape image gallery">
+    <div ref={frameRef} data-intro-cards className="intro-bounce-cards" role="group" aria-label="Hero video gallery">
       <div className="intro-bounce-cards__scale">
         <BounceCards
           images={images}
