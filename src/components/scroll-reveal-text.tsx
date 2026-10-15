@@ -540,7 +540,7 @@ export function ScrollRevealText({ as: Tag = "p", text, className, avatars = fal
   return (
     <Tag className={`relative ${className || ""}`}>
       <span data-scroll-reveal aria-label={text.replace("awwwsome", "awwwwwsome")}>
-        {conveyorEnd >= 0 ? <>{text.slice(0, conveyorWordStart)}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-conveyor-word>{text.slice(conveyorWordStart, conveyorEnd)}</span><ConveyorCard /></span>{text.slice(conveyorEnd)}</> : inlineVideoAfter && inlineVideoIndex >= 0 ? <>{renderPlainText(text.slice(0, inlineVideoIndex))}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-inline-video-word>{inlineVideoAfter}</span><InlineVideo content={inlineVideoContent} /></span>{renderPlainText(text.slice(inlineVideoIndex + inlineVideoAfter.length))}</> : crownWord && wordIndex >= 0 ? <>{text.slice(0, wordIndex)}<span data-crown-word={crownWord} className="relative inline-block whitespace-nowrap">{crownWord}<span data-crown-baseline aria-hidden="true" className="inline-block h-0 w-0 align-baseline" /><Crown /></span>{renderPlainText(text.slice(wordIndex + crownWord.length))}</> : glassWord ? withGlassWord(text, glassWord) : renderPlainText(text)}
+        {callIcon ? <a href="https://cal.com/alokpandey/30min" target="_blank" rel="noopener noreferrer" className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-neutral-500">{renderPlainText(text)}</a> : conveyorEnd >= 0 ? <>{text.slice(0, conveyorWordStart)}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-conveyor-word>{text.slice(conveyorWordStart, conveyorEnd)}</span><ConveyorCard /></span>{text.slice(conveyorEnd)}</> : inlineVideoAfter && inlineVideoIndex >= 0 ? <>{renderPlainText(text.slice(0, inlineVideoIndex))}<span data-layout-pair className="inline-block whitespace-nowrap"><span data-inline-video-word>{inlineVideoAfter}</span><InlineVideo content={inlineVideoContent} /></span>{renderPlainText(text.slice(inlineVideoIndex + inlineVideoAfter.length))}</> : crownWord && wordIndex >= 0 ? <>{text.slice(0, wordIndex)}<span data-crown-word={crownWord} className="relative inline-block whitespace-nowrap">{crownWord}<span data-crown-baseline aria-hidden="true" className="inline-block h-0 w-0 align-baseline" /><Crown /></span>{renderPlainText(text.slice(wordIndex + crownWord.length))}</> : glassWord ? withGlassWord(text, glassWord) : renderPlainText(text)}
       </span>
       {techWord && text.includes(techWord) && <FunctionalTechText text={techWord} />}
       {gradientWord && text.includes(gradientWord) && <SmoothGradientText text={gradientWord} />}
@@ -601,19 +601,21 @@ function SocialIcons() {
   return (
     <span className="relative ml-[10px] inline-flex h-[40px] w-[100px] align-middle whitespace-normal sm:h-[55px] sm:w-[135px]">
       {[
-        { icon: <XFormerlyTwitter variant="light" aria-hidden="true" className="h-5 w-5 sm:h-7 sm:w-7" />, label: "X / Twitter" },
-        { icon: <Linkedin aria-hidden="true" className="h-5 w-5 sm:h-7 sm:w-7" />, label: "LinkedIn" },
-        { icon: <Github aria-hidden="true" className="h-5 w-5 sm:h-7 sm:w-7" />, label: "GitHub" },
-      ].map(({ icon, label }, index) => (
-        <span
+        { icon: <XFormerlyTwitter variant="light" aria-hidden="true" className="h-5 w-5 sm:h-7 sm:w-7" />, label: "X / Twitter", href: "https://x.com/AlokPandey37305" },
+        { icon: <Linkedin aria-hidden="true" className="h-5 w-5 sm:h-7 sm:w-7" />, label: "LinkedIn", href: "https://www.linkedin.com/in/alokpy1484" },
+        { icon: <Github aria-hidden="true" className="h-5 w-5 sm:h-7 sm:w-7" />, label: "GitHub", href: "https://github.com/alokpy1484" },
+      ].map(({ icon, label, href }, index) => (
+        <a
           key={label}
           data-social-icon
-          role="img"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label={label}
           className={`absolute top-0 flex h-[40px] w-[40px] items-center justify-center rounded-full border border-[#D5D5D5] bg-white transition-[scale,translate] duration-200 ease-out hover:z-10 hover:scale-150 hover:-translate-y-[40%] motion-reduce:transition-none sm:h-[55px] sm:w-[55px] ${index === 0 ? "left-0" : index === 1 ? "left-[30px] sm:left-[40px]" : "left-[60px] sm:left-[80px]"}`}
         >
           {icon}
-        </span>
+        </a>
       ))}
     </span>
   );
